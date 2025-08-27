@@ -1,0 +1,9 @@
+[project]
+name = "chop-chop"
+version = "0.1.0"
+description = "Script chop-chop collection"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click",
+]
