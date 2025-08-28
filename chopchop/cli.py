@@ -22,11 +22,11 @@ CFG_ID = 21
 @click.option('--has-farms/--no-has-farms', default=False, help='Flag to indicate if farms are present')
 def remove_positions(asset_ids, has_farms):
     """Remove positions command with mandatory asset IDs and optional has_farms flag."""
-    click.echo(f"🚀 Starting remove_positions for asset IDs: {list(asset_ids)}")
-    click.echo(f"⚙️  Configuration: has_farms={has_farms}")
-    click.echo("📡 Preparing removal calls...")
+    click.echo(f"🚀 Captain's log: Engaging warp drive to remove positions for asset IDs: {list(asset_ids)}")
+    click.echo(f"🔧 Engineering report: Dilithium crystals configured with has_farms={has_farms}")
+    click.echo("📡 Communications: Hailing frequencies open, preparing photon torpedo removal calls...")
     client = initialize_network_client()
-    click.echo(f"✅ Connected to chain: {client.api.chain}")
+    click.echo(f"✅ Helm: Successfully docked with starbase {client.api.chain}")
     omnipool = Omnipool(client)
     uniques = Uniques(client)
     utility = Utility(client)
@@ -42,7 +42,7 @@ def remove_positions(asset_ids, has_farms):
     # Process positions for provided asset IDs
     for asset_id in asset_ids:
         deposit_positions = omnipool_wlm.get_deposit_positions(asset_id)
-        click.echo(f"🔍 Asset {asset_id}: Found {len(deposit_positions)} deposit positions")
+        click.echo(f"🔍 Sensors: Long-range scanners detect {len(deposit_positions)} Klingon deposit positions on asset {asset_id}")
 
         for (deposit_id, farms) in deposit_positions:
             owner = uniques.query_owner(2584, deposit_id)
@@ -68,20 +68,20 @@ def remove_positions(asset_ids, has_farms):
         schedule_call = scheduler.create_schedule_after_call(block_delay, force_batch_call)
         schedule_calls.append(schedule_call)
 
-    click.echo("🔄 Retrieving omnipool positions for all assets...")
+    click.echo("🔄 Science Officer: Analyzing quantum flux in omnipool nebula for all assets...")
     positions = omnipool.retrieve_positions()
     l = []
     for key, value in positions.items():
         if value.asset_id in asset_ids:
             l.append((key, value.shares))
 
-    click.echo(f"📊 Retrieved {len(l)} positions matching your asset IDs")
+    click.echo(f"📊 Data: Computing... {len(l)} hostile positions identified matching your tactical parameters")
 
     entries = []
 
     remove_liquidity_calls = []
 
-    click.echo("⚡ Preparing remove liquidity calls...")
+    click.echo("⚡ Tactical: Charging phaser arrays for liquidity removal sequence...")
 
     for (position_id, shares) in l:
         if position_id in future_omni_pos_owners:
@@ -106,12 +106,12 @@ def remove_positions(asset_ids, has_farms):
         schedule_call = scheduler.create_schedule_after_call(block_delay, force_batch_call)
         schedule_calls.append(schedule_call)
 
-    click.echo("\n🎉 Success! Here's your encoded batch call:")
+    click.echo("\n🎉 Mission accomplished! The Borg have been defeated. Here's your encoded subspace transmission:")
     click.echo("" + "="*50)
     # Batch all schedule calls in one force_batch call
     final_batch_call = utility.create_force_batch(schedule_calls)
     click.echo(final_batch_call.encode())
     click.echo("" + "="*50)
-    click.echo("✨ All done! You can now submit this call to the network.")
+    click.echo("✨ Captain, all systems are nominal. Permission to engage and transmit to the network, sir!")
     client.api.close()
 
