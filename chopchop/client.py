@@ -52,19 +52,32 @@ karura_type_registry = {
 
 LOCAL_RPC = "ws://127.0.0.1:9988"
 CHOPSTICKS = "http://127.0.0.1:8000"
-#DEVNET_RPC= "wss://hydradx-devnet-rpc.play.hydration.cloud"
-ROCOCO_RPC= "wss://hydradx-rococo-rpc.play.hydration.cloud"
-#HYDRA_MAINNET= "wss://hydradx-rpc.dwellir.com"
-#HYDRA_MAINNET= "wss://hydration-rpc.n.dwellir.com:443"
 HYDRA_MAINNET= "wss://hydration.ibp.network:443"
-LARK = "https://1.lark.hydration.cloud"
+LARK1 = "https://1.lark.hydration.cloud"
 LARK2 = "https://2.lark.hydration.cloud"
 NICE = 'wss://rpc.nice.hydration.cloud:443'
 
 RPC = HYDRA_MAINNET
 
-def initialize_network_client(r: str | None = None) -> Client:
-    rpc = r or RPC
+NETWORK_MAP = {
+    "mainnet": HYDRA_MAINNET,
+    "lark1": LARK1,
+    "lark2": LARK2,
+    "nice": NICE,
+    "local": LOCAL_RPC,
+    "chopsticks": CHOPSTICKS,
+}
+
+def resolve_network_rpc(network: str | None = None, custom_rpc: str | None = None) -> str:
+    """Resolve network parameter to RPC URL."""
+    if custom_rpc:
+        return custom_rpc
+    if network and network in NETWORK_MAP:
+        return NETWORK_MAP[network]
+    return RPC
+
+def initialize_network_client(r: str | None = None, network: str | None = None, custom_rpc: str | None = None) -> Client:
+    rpc = r or resolve_network_rpc(network, custom_rpc)
     try:
         api = SubstrateInterface(
             url=rpc,

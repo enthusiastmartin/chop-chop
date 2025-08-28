@@ -6,6 +6,7 @@ from chopchop.pallets.omnipool_lm import OmnipoolWLM, OmnipoolLM
 from chopchop.pallets.scheduler import Scheduler
 from chopchop.pallets.uniques import Uniques
 from chopchop.pallets.utility import Utility
+from substrateinterface.exceptions import SubstrateRequestException
 
 
 @click.group()
@@ -20,13 +21,32 @@ CFG_ID = 21
 @cli.command()
 @click.argument('asset_ids', nargs=-1, required=True, type=click.IntRange(min=1))
 @click.option('--check-farms', default=True, help='Flag to indicate if farms are present')
-def remove_positions(asset_ids, check_farms):
+@click.option('--lark1', 'network', flag_value='lark1', help='Connect to Lark1 network')
+@click.option('--lark2', 'network', flag_value='lark2', help='Connect to Lark2 network')
+@click.option('--mainnet', 'network', flag_value='mainnet', help='Connect to Hydra Mainnet (default)')
+@click.option('--nice', 'network', flag_value='nice', help='Connect to Nice network')
+@click.option('--local', 'network', flag_value='local', help='Connect to local network')
+@click.option('--chopsticks', 'network', flag_value='chopsticks', help='Connect to Chopsticks network')
+@click.option('--rpc', 'custom_rpc', help='Connect to custom RPC URL')
+def remove_positions(asset_ids, check_farms, network, custom_rpc):
     """Remove positions command with mandatory asset IDs and optional has_farms flag."""
     click.echo(f"🚀 Captain's log: Engaging warp drive to remove positions for asset IDs: {list(asset_ids)}")
     click.echo(f"🔧 Engineering report: Dilithium crystals configured to check farms: {check_farms}")
     click.echo("📡 Communications: Hailing frequencies open, preparing photon torpedo removal calls...")
-    client = initialize_network_client()
-    click.echo(f"✅ Helm: Successfully docked with starbase {client.api.chain}")
+    
+    try:
+        client = initialize_network_client(network=network, custom_rpc=custom_rpc)
+        click.echo(f"✅ Helm: Successfully docked with starbase {client.api.chain}")
+    except (SubstrateRequestException, RuntimeError, Exception) as e:
+        click.echo("🚨 RED ALERT! 🚨")
+        click.echo("💥 Engineering to Bridge: Warp core breach detected!")
+        click.echo("🔴 Commander Data: Unable to establish subspace communication link with the starbase.")
+        click.echo("🛸 Geordi La Forge: The dilithium matrix is showing anomalous readings, Captain.")
+        click.echo("⚠️  Captain Picard: It appears the RPC connection has been severed by unknown forces.")
+        click.echo("🖖 Mr. Spock: Logic dictates we cannot proceed without a stable quantum entanglement channel.")
+        click.echo("💫 Status: Mission aborted. The final frontier will have to wait another day.")
+        click.echo(f"🔧 Technical details for Chief O'Brien: {str(e)}")
+        return
     omnipool = Omnipool(client)
     uniques = Uniques(client)
     utility = Utility(client)
