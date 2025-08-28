@@ -59,6 +59,7 @@ uv run python -m chopchop remove-positions [ASSET_IDS]... [OPTIONS]
 
 **Options:**
 - `--check-farms / --no-check-farms`: Flag to indicate if farms should be checked (default: True)
+- `--remove-token`: Remove token from Omnipool after removing positions (also sets tradability to 0 and temporarily adjusts existential deposits)
 
 **Network Options:**
 - `--lark1`: Connect to Lark1 network
@@ -83,6 +84,9 @@ uv run python -m chopchop remove-positions 123 456 789
 
 # Remove positions without checking farms
 uv run python -m chopchop remove-positions 123 --no-check-farms
+
+# Remove positions and remove token from Omnipool (comprehensive cleanup)
+uv run python -m chopchop remove-positions 123 --remove-token
 
 # Use different networks
 uv run python -m chopchop remove-positions 123 --lark1
