@@ -18,14 +18,15 @@ KILT_ID = 27
 CFG_ID = 21
 
 @cli.command()
-@click.argument('position', type=click.IntRange(min=1))
+@click.argument('asset_ids', nargs=-1, required=True, type=click.IntRange(min=1))
 @click.option('--has-farms/--no-has-farms', default=False, help='Flag to indicate if farms are present')
-def remove_positions(position, has_farms):
-    """Remove positions command with a mandatory positive number and optional has_farms flag."""
-    click.echo(f"-- remove_positions executed with position={position}, has_farms={has_farms}")
-    print(f"Preparing call to remove_positions for assets: {position}")
+def remove_positions(asset_ids, has_farms):
+    """Remove positions command with mandatory asset IDs and optional has_farms flag."""
+    click.echo(f"🚀 Starting remove_positions for asset IDs: {list(asset_ids)}")
+    click.echo(f"⚙️  Configuration: has_farms={has_farms}")
+    click.echo("📡 Preparing removal calls...")
     client = initialize_network_client()
-    print(f"Connected to: {client.api.chain}")
+    click.echo(f"✅ Connected to chain: {client.api.chain}")
     omnipool = Omnipool(client)
     uniques = Uniques(client)
     utility = Utility(client)
@@ -38,10 +39,10 @@ def remove_positions(position, has_farms):
 
     split_size = 20
 
-    # Process positions for both KILT_ID and CFG_ID
-    for asset_id in [KILT_ID, CFG_ID]:
+    # Process positions for provided asset IDs
+    for asset_id in asset_ids:
         deposit_positions = omnipool_wlm.get_deposit_positions(asset_id)
-        print(f"Asset {asset_id} - found {len(deposit_positions)} deposit positions")
+        click.echo(f"🔍 Asset {asset_id}: Found {len(deposit_positions)} deposit positions")
 
         for (deposit_id, farms) in deposit_positions:
             owner = uniques.query_owner(2584, deposit_id)
@@ -67,20 +68,20 @@ def remove_positions(position, has_farms):
         schedule_call = scheduler.create_schedule_after_call(block_delay, force_batch_call)
         schedule_calls.append(schedule_call)
 
-    print("Retrieving omnipool positions for all assets ... ")
+    click.echo("🔄 Retrieving omnipool positions for all assets...")
     positions = omnipool.retrieve_positions()
     l = []
     for key, value in positions.items():
-        if value.asset_id == KILT_ID or value.asset_id == CFG_ID:
+        if value.asset_id in asset_ids:
             l.append((key, value.shares))
 
-    print(f"{len(l)} positions retrieved")
+    click.echo(f"📊 Retrieved {len(l)} positions matching your asset IDs")
 
     entries = []
 
     remove_liquidity_calls = []
 
-    print("Preparing remove_liquidity_calls... ")
+    click.echo("⚡ Preparing remove liquidity calls...")
 
     for (position_id, shares) in l:
         if position_id in future_omni_pos_owners:
@@ -105,9 +106,12 @@ def remove_positions(position, has_farms):
         schedule_call = scheduler.create_schedule_after_call(block_delay, force_batch_call)
         schedule_calls.append(schedule_call)
 
-    print("Here is your encoded call, sir! Enjoy!\n\n")
+    click.echo("\n🎉 Success! Here's your encoded batch call:")
+    click.echo("" + "="*50)
     # Batch all schedule calls in one force_batch call
     final_batch_call = utility.create_force_batch(schedule_calls)
-    print(final_batch_call.encode())
+    click.echo(final_batch_call.encode())
+    click.echo("" + "="*50)
+    click.echo("✨ All done! You can now submit this call to the network.")
     client.api.close()
 
