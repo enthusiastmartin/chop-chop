@@ -8,3 +8,6 @@ dependencies = [
     "click",
     "substrate-interface>=1.7.11",
 ]
+
+[project.scripts]
+chopchop = "chopchop.cli:cli"
