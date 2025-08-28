@@ -19,11 +19,11 @@ CFG_ID = 21
 
 @cli.command()
 @click.argument('asset_ids', nargs=-1, required=True, type=click.IntRange(min=1))
-@click.option('--has-farms/--no-has-farms', default=False, help='Flag to indicate if farms are present')
-def remove_positions(asset_ids, has_farms):
+@click.option('--check-farms', default=True, help='Flag to indicate if farms are present')
+def remove_positions(asset_ids, check_farms):
     """Remove positions command with mandatory asset IDs and optional has_farms flag."""
     click.echo(f"🚀 Captain's log: Engaging warp drive to remove positions for asset IDs: {list(asset_ids)}")
-    click.echo(f"🔧 Engineering report: Dilithium crystals configured with has_farms={has_farms}")
+    click.echo(f"🔧 Engineering report: Dilithium crystals configured to check farms: {check_farms}")
     click.echo("📡 Communications: Hailing frequencies open, preparing photon torpedo removal calls...")
     client = initialize_network_client()
     click.echo(f"✅ Helm: Successfully docked with starbase {client.api.chain}")
@@ -39,36 +39,37 @@ def remove_positions(asset_ids, has_farms):
 
     split_size = 20
 
-    # Process positions for provided asset IDs
-    for asset_id in asset_ids:
-        deposit_positions = omnipool_wlm.get_deposit_positions(asset_id)
-        click.echo(f"🔍 Sensors: Long-range scanners detect {len(deposit_positions)} Klingon deposit positions on asset {asset_id}")
+    if check_farms:
+        # Process positions for provided asset IDs
+        for asset_id in asset_ids:
+            deposit_positions = omnipool_wlm.get_deposit_positions(asset_id)
+            click.echo(f"🔍 Sensors: Long-range scanners detect {len(deposit_positions)} Klingon deposit positions on asset {asset_id}")
 
-        for (deposit_id, farms) in deposit_positions:
-            owner = uniques.query_owner(2584, deposit_id)
-            farm_ids = []
-            for farm in farms:
-                farm_ids.append(farm["yield_farm_id"].value)
-            call = omnipool_lm.create_exit_farm_call(deposit_id, farm_ids)
-            dispatch_call = utility.create_dispatch_as_call(owner, call)
-            dispatch_as_calls.append(dispatch_call)
+            for (deposit_id, farms) in deposit_positions:
+                owner = uniques.query_owner(2584, deposit_id)
+                farm_ids = []
+                for farm in farms:
+                    farm_ids.append(farm["yield_farm_id"].value)
+                call = omnipool_lm.create_exit_farm_call(deposit_id, farm_ids)
+                dispatch_call = utility.create_dispatch_as_call(owner, call)
+                dispatch_as_calls.append(dispatch_call)
 
-            omni_pos = omnipool_lm.get_omnipool_position_id(deposit_id)
-            future_omni_pos_owners[omni_pos] = owner
+                omni_pos = omnipool_lm.get_omnipool_position_id(deposit_id)
+                future_omni_pos_owners[omni_pos] = owner
 
-    sublists = []
-    for i in range(0, len(dispatch_as_calls), split_size):
-        sublists.append(dispatch_as_calls[i:i + split_size])
+        sublists = []
+        for i in range(0, len(dispatch_as_calls), split_size):
+            sublists.append(dispatch_as_calls[i:i + split_size])
 
-    # Create schedule calls for each sublist with increasing block delays
-    schedule_calls = []
-    for i, sublist in enumerate(sublists):
-        force_batch_call = utility.create_force_batch(sublist)
-        block_delay = i + 1  # 1,2,3
-        schedule_call = scheduler.create_schedule_after_call(block_delay, force_batch_call)
-        schedule_calls.append(schedule_call)
+        # Create schedule calls for each sublist with increasing block delays
+        schedule_calls = []
+        for i, sublist in enumerate(sublists):
+            force_batch_call = utility.create_force_batch(sublist)
+            block_delay = i + 1  # 1,2,3
+            schedule_call = scheduler.create_schedule_after_call(block_delay, force_batch_call)
+            schedule_calls.append(schedule_call)
 
-    click.echo("🔄 Science Officer: Analyzing quantum flux in omnipool nebula for all assets...")
+    click.echo("🔄 Science Officer: Analyzing quantum flux in OMNIPOOL nebula for all assets...")
     positions = omnipool.retrieve_positions()
     l = []
     for key, value in positions.items():
