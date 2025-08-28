@@ -34,7 +34,7 @@ Chop-chop is a Python CLI tool that provides commands for removing positions fro
 Run the CLI using uv:
 
 ```bash
-uv run chopchop --help
+uv run python -m chopchop --help
 ```
 
 ### Available Commands
@@ -44,7 +44,7 @@ uv run chopchop --help
 Remove positions for specified asset IDs with optional farm checking.
 
 ```bash
-uv run chopchop remove-positions [ASSET_IDS]... [OPTIONS]
+uv run python -m chopchop remove-positions [ASSET_IDS]... [OPTIONS]
 ```
 
 **Arguments:**
@@ -69,25 +69,25 @@ Other Options:
 
 ```bash
 # Remove positions for single asset (uses Hydra Mainnet by default)
-uv run chopchop remove-positions 123
+uv run python -m chopchop remove-positions 123
 
 # Remove positions for multiple assets
-uv run chopchop remove-positions 123 456 789
+uv run python -m chopchop remove-positions 123 456 789
 
 # Remove positions without checking farms
-uv run chopchop remove-positions 123 --no-check-farms
+uv run python -m chopchop remove-positions 123 --no-check-farms
 
 # Use different networks
-uv run chopchop remove-positions 123 --lark1
-uv run chopchop remove-positions 123 --lark2
-uv run chopchop remove-positions 123 --nice
+uv run python -m chopchop remove-positions 123 --lark1
+uv run python -m chopchop remove-positions 123 --lark2
+uv run python -m chopchop remove-positions 123 --nice
 
 # Use custom RPC endpoint
-uv run chopchop remove-positions 123 --rpc ws://myrpc.com:443
-uv run chopchop remove-positions 123 --rpc https://custom.endpoint.com
+uv run python -m chopchop remove-positions 123 --rpc ws://myrpc.com:443
+uv run python -m chopchop remove-positions 123 --rpc https://custom.endpoint.com
 
 # Combine network selection with other options
-uv run chopchop remove-positions 123 456 --lark1 --no-check-farms
+uv run python -m chopchop remove-positions 123 456 --lark1 --no-check-farms
 ```
 
 ## Development
@@ -102,7 +102,7 @@ The project structure:
 To run in development mode:
 
 ```bash
-uv run chopchop
+uv run python -m chopchop
 ```
 
 ## Dependencies
