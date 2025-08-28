@@ -71,7 +71,7 @@ def remove_positions(asset_ids, check_farms, remove_token, network, custom_rpc):
 
     # Store original existential deposits for restoration later
     original_deposits = {}
-    click.echo("� Archive: Storing existential deposits")
+    click.echo("💾 Archive: Storing existential deposits")
     for asset_id in asset_ids:
         asset_details = asset_registry.get_asset_details(asset_id)
         if asset_details and 'existential_deposit' in asset_details:
