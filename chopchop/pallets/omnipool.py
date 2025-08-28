@@ -8,7 +8,14 @@ from chopchop.pallets.tokens import Tokens
 
 from typing import List, Dict, Optional
 
-from chopchop.types import Asset
+@dataclass
+class Asset:
+    symbol: str
+    name: str
+    initial_price: float
+    decimals: int
+    asset_id: Optional[int]
+
 
 @dataclass
 class InitParams:
