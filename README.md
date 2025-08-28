@@ -15,6 +15,10 @@ Chop-chop is a Python CLI tool that provides commands for removing positions fro
 
 1. Install uv if you haven't already:
    ```bash
+   brew install uv
+   ```
+
+   ```bash
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
