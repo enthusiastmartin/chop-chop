@@ -6,7 +6,6 @@ from chopchop.pallets.omnipool_lm import OmnipoolWLM, OmnipoolLM
 from chopchop.pallets.scheduler import Scheduler
 from chopchop.pallets.uniques import Uniques
 from chopchop.pallets.utility import Utility
-from chopchop.pallets.circuit_breaker import CircuitBreaker
 from chopchop.pallets.asset_registry import AssetRegistry
 from substrateinterface.exceptions import SubstrateRequestException
 
@@ -61,7 +60,6 @@ def remove_positions(asset_ids, check_farms, remove_token, network, custom_rpc):
     omnipool_wlm = OmnipoolWLM(client)
     omnipool_lm = OmnipoolLM(client)
     scheduler = Scheduler(client)
-    circuit_breaker = CircuitBreaker(client)
     asset_registry = AssetRegistry(client)
 
     dispatch_as_calls = []
@@ -79,12 +77,12 @@ def remove_positions(asset_ids, check_farms, remove_token, network, custom_rpc):
         else:
             click.echo(f"⚠️  Warning: Could not retrieve existential deposit for asset {asset_id}")
 
-    # First step: Set circuit breaker remove liquidity limit to None AND set existential deposits to 0 (immediate execution)
+    # First step: Set tradability to 8 AND set existential deposits to 0 (immediate execution)
     initial_calls = []
-    click.echo("🔧 Circuit Breaker: Disabling remove liquidity limits for all specified assets...")
+    click.echo("🔧 Omnipool: Setting tradability to 8 for all specified assets...")
     for asset_id in asset_ids:
-        cb_call = circuit_breaker.set_remove_liquidity_limit_call(asset_id, None)
-        initial_calls.append(cb_call)
+        tradability_call = omnipool.set_asset_tradable_state_call(asset_id, 8)
+        initial_calls.append(tradability_call)
     
     click.echo("💰 Asset Registry: Setting existential deposits to 0 temporarily...")
     for asset_id in asset_ids:
@@ -193,7 +191,7 @@ def remove_positions(asset_ids, check_farms, remove_token, network, custom_rpc):
         final_schedule_call = scheduler.create_schedule_after_call(final_delay, final_batch_call)
         schedule_calls.append(final_schedule_call)
     
-    # Combine initial calls (circuit breaker + existential deposit = 0) + scheduled calls
+    # Combine initial calls (tradability=8 + existential deposit=0) + scheduled calls
     all_calls = []
     if initial_calls:
         initial_batch_call = utility.create_force_batch(initial_calls)
