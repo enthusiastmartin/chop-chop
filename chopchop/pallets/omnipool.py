@@ -81,6 +81,8 @@ class Omnipool(Pallet):
         "remove_liquidity": "remove_liquidity",
         "sell": "sell",
         "buy": "buy",
+        "set_asset_tradable_state": "set_asset_tradable_state",
+        "remove_token": "remove_token",
     }
 
     def __init__(self, client: Client):
@@ -240,5 +242,26 @@ class Omnipool(Pallet):
             output[(owner,position.asset_id)].append((position_id,position))
 
         return output
+
+    def set_asset_tradable_state_call(self, asset_id, state):
+        """Create a call to set asset's tradable state."""
+        call = create_call(self._client, self.MODULE_NAME, self.EXTRINSICS["set_asset_tradable_state"], params={
+            "asset_id": asset_id,
+            "state": {"bits": state},
+        })
+        return call
+
+    def remove_token_call(self, asset_id, beneficiary="13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"):
+        """Create a call to remove token from Omnipool.
+        
+        Args:
+            asset_id: The asset ID to remove
+            beneficiary: The beneficiary account (defaults to Treasury)
+        """
+        call = create_call(self._client, self.MODULE_NAME, self.EXTRINSICS["remove_token"], params={
+            "asset_id": asset_id,
+            "beneficiary": beneficiary,
+        })
+        return call
 
 
